@@ -4,17 +4,9 @@ import modules as m
 
 config = "user='cs421g19' host='comp421.cs.mcgill.ca' dbname='cs421' password='Pmdd0301'"
 
-def doQuery(cur) :
-
-    cur.execute( "SELECT cname, total_medal_number FROM country" )
-
-    for firstname, lastname in cur.fetchall() :
-        print firstname, lastname
-
-
 connection = psycopg2.connect(config)
 cur = connection.cursor()
-doQuery(connection)
+m.doQuery(connection)
 connection.close()
 
 

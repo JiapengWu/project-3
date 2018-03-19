@@ -1,3 +1,5 @@
+# write functions that perform queries and modification here
+
 def doQuery(cur) :
 
     cur.execute( "SELECT cname, total_medal_number FROM country" )
