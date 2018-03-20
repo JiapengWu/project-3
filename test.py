@@ -6,6 +6,6 @@ config = "user='cs421g19' host='comp421.cs.mcgill.ca' dbname='cs421' password='P
 connection = psycopg2.connect(config)
 cur = connection.cursor()
 
-m.add_single_player(cur, 10000, "", "", "China")
-
+# m.add_single_player(cur, 10000, "", "", "China")
+m.player_with_most_gold_medals(cur)
 connection.close()
