@@ -6,7 +6,7 @@ config = "user='cs421g19' host='comp421.cs.mcgill.ca' dbname='cs421' password='P
 
 connection = psycopg2.connect(config)
 cur = connection.cursor()
-m.doQuery(connection)
+m.doQuery(cur)
 connection.close()
 
 
