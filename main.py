@@ -1,12 +1,12 @@
 #!/usr/bin/python
-import psycopg2
 import modules as m
+import psycopg2
 
 config = "user='cs421g19' host='comp421.cs.mcgill.ca' dbname='cs421' password='Pmdd0301'"
 
 connection = psycopg2.connect(config)
 cur = connection.cursor()
-m.doQuery(cur)
+print(m.player_with_most_gold_medals(cur, 'Canada'))
 connection.close()
 
 
