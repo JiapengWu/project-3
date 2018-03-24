@@ -1,43 +1,107 @@
-
-import tkinter as tk                    # imports
-from tkinter import ttk
-
-win = tk.Tk()                           # Create instance      
-win.title("Python GUI")                 # Add a title 
-tabControl = tk.ttk.Notebook(win)          # Create Tab Control
-tab1 = tk.ttk.Frame(tabControl)            # Create a tab
-tab2 = tk.ttk.Frame(tabControl)          
-tab3 = tk.ttk.Frame(tabControl)          
-tab4 = tk.ttk.Frame(tabControl)         
-tab5 = tk.ttk.Frame(tabControl)           
-tab6 = tk.ttk.Frame(tabControl)             
- 
-tabControl.add(tab1, text='Create a Player')      # Add the tab
-#label_1 = Label(win, text ="Player Name")
-
-tabControl.add(tab2, text='Tab 2')      
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+#  pygui.py
+#
+'''
+Python GUI Tkinter
+'''
+import os, sys
+import tkinter as tk
 
 
-tabControl.add(tab3, text='Tab 3')     
+class Window(tk.Tk):
+    def __init__(self,*args,**kwargs):
+        tk.Tk.__init__(self,*args,**kwargs)
+        container = tk.Frame(self)
+        container.pack(side="top",fill="both",expand=True)
+        container.grid_rowconfigure(0,weight=1)
+        container.grid_columnconfigure(0,weight=1)
+
+        self.frames = []
+
+        frame = RadioButtons(container, self)
+        frame1 = Option1(container, self)
+        frame2 = Option1(container, self)
+        self.frames.append(frame)
+        self.frames.append(frame1)
+        self.frames.append(frame2)
+        for f in self.frames:
+            f.grid(row=0, column=0, sticky="nsew")
+        self.show_frame(0)
+
+    def show_frame(self,cont):
+        frame = self.frames[cont]
+        frame.tkraise()
 
 
-tabControl.add(tab4, text='Tab 4')      
+class RadioButtons(tk.Frame):
+    def __init__(self,parent,controller):
+        tk.Frame.__init__(self,parent)
+        label = tk.Label(self,text="Select option:",font=('Arial',10))
+        label.pack(pady=10,padx=10)
+
+        option = tk.IntVar()
+        option1 = tk.Radiobutton(self,text='1',value=1,variable=option)
+        option1.pack(anchor="nw")
+        option2 = tk.Radiobutton(self,text='2',value=2,variable=option)
+        option2.pack(anchor="nw")
+
+        option1.select()
+
+        select_bt = tk.Button(self,text="Select",command=lambda: controller.show_frame(option.get()))
+        quit_bt = tk.Button(self,text="Quit",command=self.quit)
+        quit_bt.pack(side='bottom')
+        select_bt.pack(side='bottom')
 
 
-tabControl.add(tab5, text='Tab 5')      
+class Option1(tk.Frame):
+    '''
+        Add a client to the database
+    '''
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self,parent)
+
+        label = tk.Label(self,text="Do stuff",font=('Arial',10))
+        label.pack(pady=10,padx=10)
+
+        stuff = tk.Label(self,text="Stuff")
+        stuff.pack()
+
+        self.entryStuff = tk.Entry(self)
+        self.entryStuff.pack()
+
+        submit_btn = tk.Button(self,text="Show stuff",command=self.dostuff)
+        submit_btn.pack()
+
+        self.showStuff = tk.Label(self,text='')
+        self.showStuff.pack()
+
+        goBack = tk.Button(self,text="Back",command=lambda: controller.show_frame(0))
+        quit_bt = tk.Button(self,text="Quit",command=self.quit)
+        quit_bt.pack(side='bottom')
+        goBack.pack(side='bottom')
+
+    def dostuff(self):
+        enteredText = self.entryStuff.get()
+        self.entryStuff.delete(0, tk.END)
+        self.showStuff.config(text=enteredText)
 
 
-tabControl.add(tab6, text='Tab 6')      
+def main(argc, args):
+    root = Window()
+    root.protocol("WM_DELETE_WINDOW", root.quit)
+    root.mainloop()
+    root.destroy()
+    root.quit()
+    return 0
 
 
-tabControl.pack(expand=1, fill="both")  # Pack to make visible
-
-
-#frame = Frame(win, width=100, height=50)
-#frame.place(x=700, y=0)
-#label = Label(frame, text="test").pack()
-
-#frame_2 = Frame(win, width=100, height=50)
-#frame_2.place(x=700, y=0)
-#label_2 = Label(frame_2, text="test").pack()
-win.mainloop()                          # Start GUI
+if __name__ == "__main__":
+    exit_code = main(len(sys.argv), sys.argv)
+    # print("Closing connections")
+    # cursor.close()
+    # conn.close()
+    # server.stop()
+    print("Exiting program")
+    sys.exit(exit_code)
