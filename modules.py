@@ -71,8 +71,9 @@ def female_player_with_most_gold_medals_in_country_with_most_gold_medals(conn, c
 
 # update give a medal to each player who won 1st, 2nd or 3rd place in  a 'finals' match
 # if the player won more than one medal (participated in multiple matches) give him the right number of medals
-def update_player_medal(cur):
-    cur.execute('''do $$
+def update_player_medal(conn,cur, msg):
+    try:
+        cur.execute('''do $$
           declare
             arow record;
             BEGIN
@@ -88,6 +89,11 @@ def update_player_medal(cur):
                         where player_id = arow.player_id;
                 END LOOP;
             END; $$''')
+        conn.commit() 
+        msg.set("Database updated successfully.")
+    except psycopg2.Error as e:
+        conn.rollback() 
+        msg.set(e.pgerror)
 
 
 # -- get the number of medals from each player of same country

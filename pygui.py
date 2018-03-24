@@ -67,7 +67,7 @@ class RadioButtons(tk.Frame):
         option2.pack(anchor="nw")
         option3 = tk.Radiobutton(self,text='Option 3: Get the female player with most gold medals for country with most gold medals',value=3,variable=option)
         option3.pack(anchor="nw")
-        option4 = tk.Radiobutton(self,text='Option 4',value=4,variable=option)
+        option4 = tk.Radiobutton(self,text='Option 4: Give medals to each player who won 1st, 2nd or 3rd place in Finals match category',value=4,variable=option)
         option4.pack(anchor="nw")
         option5 = tk.Radiobutton(self,text='Option 5',value=5,variable=option)
         option5.pack(anchor="nw")
@@ -217,6 +217,36 @@ class Option3(tk.Frame):
 
 
 class Option4(tk.Frame):
+    '''
+        Give a medals to each player who won 1st, 2nd or 3rd place in Finals match category
+    '''
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self,parent)
+
+        label = tk.Label(self,text=
+            "Click \"Update\" to get the female player who won the most gold medals for the country with most gold medals",font=('Arial',10))
+        label.pack(pady=10,padx=10)
+        
+        # get the values from user input once all the containers are loaded onto frame
+        def getValues():
+            m.update_player_medal(connection, cur, msg)
+
+        # submit
+        submit_btn = tk.Button(self,text="Update",
+            command=getValues)
+        submit_btn.pack()
+
+        # success message
+        msg = tk.StringVar()
+        msgLabel = tk.Label(self, textvariable = msg)
+        msgLabel.pack()
+
+        goBack = tk.Button(self,text="Back",command=lambda: controller.show_frame(0))
+        quit_bt = tk.Button(self,text="Quit",command=self.quit)
+        quit_bt.pack(side='bottom')
+        goBack.pack(side='bottom')
+
+class Option5(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self,parent)
 
