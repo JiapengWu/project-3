@@ -124,7 +124,7 @@ class Option1(tk.Frame):
             cur.execute('select cname from country')
             result = cur.fetchall()
             connection.commit()
-            countries = map(lambda x:x[0], result)
+            countries = list(map(lambda x:x[0], result))
         except psycopg2.Error as e:
             connection.rollback()
 
@@ -194,7 +194,7 @@ class Option2(tk.Frame):
             cur.execute('select cname from country')
             result = cur.fetchall()
             connection.commit()
-            countries = map(lambda x:x[0], result)
+            countries = list(map(lambda x:x[0], result))
         except psycopg2.Error as e:
             connection.rollback()
 
@@ -392,13 +392,12 @@ class Option6(tk.Frame):
         def get_team_type():
             stype = stype_label["text"].split(":")[-1].strip()
             team_type = team_type_list.get("active")
-            print stype, team_type
             team_type_label['text'] = "You selected: " + team_type
 
             try:
                 cur.execute("select gender from sports where stype = %s and team_type = %s", (stype, team_type,))
                 genders = set(map(lambda x: x[0], cur.fetchall()))
-                print genders
+                print (genders)
                 for gender in genders:
                     gender_list.insert(tk.END, gender)
                 connection.commit()
