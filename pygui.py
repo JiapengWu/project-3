@@ -222,7 +222,7 @@ class Option2(tk.Frame):
 
         nationality = tk.Label(self, text="")
         nationality.pack()
-        
+
         # submit
         submit_btn = tk.Button(self,text="SUBMIT",
             command=getValues)
