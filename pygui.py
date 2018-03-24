@@ -73,7 +73,8 @@ class RadioButtons(tk.Frame):
         option5 = tk.Radiobutton(self,text='Option 5: Update the number of gold/silver/bronze medals for each country, \n'+ 
                                             'given the players that won medals in Finals',value=5,variable=option)
         option5.pack(anchor="nw")
-        option6 = tk.Radiobutton(self,text='Option 6',value=6,variable=option)
+        option6 = tk.Radiobutton(self,text='Option 6: Find all players who got gold medals and \n'+
+                                            'participate in a specific \'category\' in a match',value=6,variable=option)
         option6.pack(anchor="nw")   
 
         option1.select() #default select option 1
@@ -109,7 +110,7 @@ class Option1(tk.Frame):
         nameentry.pack()
 
         # gender
-        text = tk.Label(self,text="What is the player's gender(Male or Female)?")
+        text = tk.Label(self,text="What is the player's gender (Male or Female)?")
         text.pack()
 
         genderentry = tk.Entry(self)
@@ -281,34 +282,63 @@ class Option5(tk.Frame):
         goBack.pack(side='bottom')
 
 class Option6(tk.Frame):
+    '''
+        Find all players who got gold and participated in a specific category of a match
+    '''
     def __init__(self, parent, controller):
         tk.Frame.__init__(self,parent)
 
-        label = tk.Label(self,text="Do stuff",font=('Arial',10))
+        label = tk.Label(self,text=
+            "Fill the information find all players who got gold and participated in a specific \'category\' of match",font=('Arial',10))
         label.pack(pady=10,padx=10)
 
-        stuff = tk.Label(self,text="Stuff")
-        stuff.pack()
+        label = tk.Label(self,text="Output Format: \"{Player Name}\" ",font=('Arial',10))
+        label.pack(pady=10,padx=10)
+        
+        # sport type
+        text = tk.Label(self,text="What is the Sport Type (Swimming or Athletics)?")
+        text.pack()
 
-        self.entryStuff = tk.Entry(self)
-        self.entryStuff.pack()
+        stypeentry = tk.Entry(self)
+        stypeentry.pack()
 
-        submit_btn = tk.Button(self,text="Show stuff",command=self.dostuff)
+        # team type
+        text = tk.Label(self,text="What is the Team Type Category (Single or Team)?")
+        text.pack()
+
+        ttentry = tk.Entry(self)
+        ttentry.pack()
+
+        # gender
+        text = tk.Label(self,text="What is the Gender category (\'male\' or \'female\')?")
+        text.pack()
+
+        gentry = tk.Entry(self)
+        gentry.pack()
+
+
+
+        # get the values from user input once all the containers are loaded onto frame
+        def getValues():
+            stype = stypeentry.get()
+            team_type = ttentry.get()
+            gender = gentry.get()
+            m.get_gold_medel_player(connection, cur, stype, team_type, gender, msg)
+
+        # submit
+        submit_btn = tk.Button(self,text="Submit",
+            command=getValues)
         submit_btn.pack()
 
-        self.showStuff = tk.Label(self,text='')
-        self.showStuff.pack()
+        # success message
+        msg = tk.StringVar()
+        msgLabel = tk.Label(self, textvariable = msg)
+        msgLabel.pack()
 
         goBack = tk.Button(self,text="Back",command=lambda: controller.show_frame(0))
         quit_bt = tk.Button(self,text="Quit",command=self.quit)
         quit_bt.pack(side='bottom')
         goBack.pack(side='bottom')
-
-    def dostuff(self):
-        enteredText = self.entryStuff.get()
-        # pid = entryStuff.get()
-        self.entryStuff.delete(0, tk.END)
-        self.showStuff.config(text=enteredText)
 
 
 
