@@ -90,7 +90,7 @@ def update_player_medal(conn,cur, msg):
                 END LOOP;
             END; $$''')
         conn.commit() 
-        msg.set("Database updated successfully.")
+        msg.set("Medals added to Players successfully.")
     except psycopg2.Error as e:
         conn.rollback() 
         msg.set(e.pgerror)
@@ -99,8 +99,10 @@ def update_player_medal(conn,cur, msg):
 # -- get the number of medals from each player of same country
 # -- add it to each respective medal count of that country
 # -- then calculate the total number of medals for that country
-def update_country_medal(cur):
-    cur.execute('''Update country
+def update_country_medal(conn, cur, msg):
+    try: 
+        cur.execute
+        ('''Update country
         set gold_number = 
         (select sum(player.gold_number) from player
          where country.cname = player.cname
@@ -117,6 +119,11 @@ def update_country_medal(cur):
         (select sum(player.gold_number)+sum(player.silver_number)+sum(player.bronze_number) from player
          where country.cname = player.cname
         );''')
+        conn.commit() 
+        msg.set("Medals added to Countries successfully.")
+    except psycopg2.Error as e:
+        conn.rollback() 
+        msg.set(e.pgerror)
 
 # Find all player female player who got gold and participate in a swimming match of type single
 def get_gold_medel_player(cur, stype, team_type, gender):
