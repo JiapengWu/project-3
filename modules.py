@@ -125,7 +125,7 @@ def update_country_medal(conn, cur, msg):
         conn.rollback() 
         msg.set(e.pgerror)
 
-# Find all player female player who got gold and participate in a swimming match of type single
+# Find all players who got gold and participate in a specific category of a match
 def get_gold_medel_player(conn, cur, stype, team_type, gender, msg):
     try: 
         cur.execute('''
