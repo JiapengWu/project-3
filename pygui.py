@@ -303,6 +303,7 @@ class Option4(tk.Frame):
         quit_bt.pack(side='bottom')
         goBack.pack(side='bottom')
 
+
 class Option5(tk.Frame):
     '''
         Update the number of gold, silver, bronze medals for each country given the players that won medals in Finals
@@ -348,70 +349,93 @@ class Option6(tk.Frame):
         label.pack(pady=10, padx=10)
 
         # stype
-        text = tk.Label(self, text="What is the type of the sports(Swimming, Athletics)?")
+        text = tk.Label(self, text="Please select the stype:")
         text.pack()
 
-        scrollbar = tk.Scrollbar(orient="horizontal")
+        stype_list = tk.Listbox(self)
+        stype_list.insert(tk.END, "Swimming")
+        stype_list.insert(tk.END, "Athletics")
+        # for i in range(len(countries)):
+        #     stype_list.insert(tk.END, countries[i])
 
-        stype_entry = tk.Entry(self)
-        stype_entry.pack()
+        stype_list.pack()
 
-
-        def get_stype_entry():
-            stype = stype_entry.get()
+        def get_stype():
+            stype = stype_list.get("active")
+            stype_label['text'] = "You selected: " + stype
             try:
                 cur.execute('select team_type from sports where stype = %s', (stype,))
-                team_types = cur.fetchall()
+                team_types = set(map(lambda x: x[0], cur.fetchall()))
+                for team_type in team_types:
+                    team_type_list.insert(tk.END, team_type)
                 connection.commit()
-                msg_1.set("What is the type of the team type({})?".format((', ').join(set(map(lambda x: x[0], team_types)))))
             except psycopg2.Error as e:
                 connection.rollback()
-                msg_1.set(e.pgerror)
+                # msg_1.set(e.pgerror)
 
         # next
-        next_btn = tk.Button(self, text="Next",
-                               command=get_stype_entry)
-        next_btn.pack()
+        select_btn = tk.Button(self,text="Select",
+            command=get_stype)
+        select_btn.pack()
 
-        msg_1 = tk.StringVar()
-        msgLabel = tk.Label(self, textvariable=msg_1)
-        msgLabel.pack()
+        stype_label = tk.Label(self, text="")
+        stype_label.pack()
+
 
         # team_type
+        text = tk.Label(self, text="Please select the team type:")
+        text.pack()
 
-        team_type_entry = tk.Entry(self)
-        team_type_entry.pack()
+        team_type_list = tk.Listbox(self)
+        team_type_list.pack()
 
         def get_team_type():
-            stype = stype_entry.get()
-            team_type = team_type_entry.get()
+            stype = stype_label["text"].split(":")[-1].strip()
+            team_type = team_type_list.get("active")
+            print stype, team_type
+            team_type_label['text'] = "You selected: " + team_type
+
             try:
                 cur.execute("select gender from sports where stype = %s and team_type = %s", (stype, team_type,))
-                genders = cur.fetchall()
+                genders = set(map(lambda x: x[0], cur.fetchall()))
+                print genders
+                for gender in genders:
+                    gender_list.insert(tk.END, gender)
                 connection.commit()
-                msg_2.set("What is the type of the gender({})?".format((', ').join(set(map(lambda x: x[0], genders)))))
             except psycopg2.Error as e:
                 connection.rollback()
-                msg_2.set(e.pgerror)
-                controller.show_frame(6)
+                # controller.show_frame(6)
 
-        # next
-        next_btn = tk.Button(self, text="Next",
-                               command=get_team_type)
-        next_btn.pack()
+        select_btn = tk.Button(self,text="Select",
+            command=get_team_type)
+        select_btn.pack()
 
-        msg_2 = tk.StringVar()
-        msgLabel = tk.Label(self, textvariable=msg_2)
-        msgLabel.pack()
+        team_type_label = tk.Label(self, text="")
+        team_type_label.pack()
 
-        gender_entry = tk.Entry(self)
-        gender_entry.pack()
 
+
+        # gender
+        text = tk.Label(self, text="What is the type of the gender?")
+        text.pack()
+        gender_list = tk.Listbox(self)
+        gender_list.pack()
+
+        def get_gender():
+            gender = gender_list.get("active")
+            gender_label['text'] = "You selected: " + gender
+
+        select_btn = tk.Button(self, text="Select",
+                               command=get_gender)
+        select_btn.pack()
+
+        gender_label = tk.Label(self, text="")
+        gender_label.pack()
 
         def getValues():
-            stype = stype_entry.get()
-            team_type = team_type_entry.get()
-            gender = gender_entry.get()
+            stype = stype_label["text"].split(":")[-1].strip()
+            team_type = team_type_label["text"].split(":")[-1].strip()
+            gender = gender_label["text"].split(":")[-1].strip()
             m.get_gold_medel_player(connection, cur, stype, team_type, gender, msg_final)
 
 
