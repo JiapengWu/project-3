@@ -115,24 +115,51 @@ class Option1(tk.Frame):
         genderentry = tk.Entry(self)
         genderentry.pack()
 
-        #nationality
-        text = tk.Label(self,text="What is the player's country")
+        # nationality
+        text = tk.Label(self,text="What is the player's country? Select from the list below:")
         text.pack()
 
-        natentry = tk.Entry(self)
-        natentry.pack()
+
+        try:
+            cur.execute('select cname from country')
+            result = cur.fetchall()
+            connection.commit()
+            countries = map(lambda x:x[0], result)
+        except psycopg2.Error as e:
+            connection.rollback()
+
+        def get_nationality():
+            nationality['text'] = "You selected: " + mylist.get("active")
+
+        scrollbar = tk.Scrollbar(self)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        mylist = tk.Listbox(self, yscrollcommand=scrollbar.set)
+        for i in range(len(countries)):
+            mylist.insert(tk.END, countries[i])
+
+        mylist.pack()
+        scrollbar.config(command=mylist.yview)
+
+        select_btn = tk.Button(self,text="Select",
+            command=get_nationality)
+        select_btn.pack()
+
+        nationality = tk.Label(self, text="")
+        nationality.pack()
+
+
 
         #get the values from user input once all the containers are loaded onto frame
         def getValues():
             pid = pidentry.get()
             name = nameentry.get()
             gender = genderentry.get()
-            nationality = natentry.get()
+            nat = nationality["text"].split(":")[-1].strip()
             pidentry.delete(0, tk.END)
-            nameentry.delete(0, tk.END)
             genderentry.delete(0, tk.END)
-            natentry.delete(0, tk.END)
-            m.add_single_player(connection, cur, pid, name, gender, nationality, msg)
+            nameentry.delete(0, tk.END)
+            m.add_single_player(connection, cur, pid, name, gender, nat, msg)
 
         #submit
         submit_btn = tk.Button(self,text="SUBMIT",
@@ -158,22 +185,44 @@ class Option2(tk.Frame):
 
         label = tk.Label(self,text="Please enter the country to see the player who won the most gold medals",font=('Arial',10))
         label.pack(pady=10,padx=10)
-        label = tk.Label(self,text="Output Format: \"{Player Name}, #medals\" ",font=('Arial',10))
-        label.pack(pady=10,padx=10)
         
         # Country
         text = tk.Label(self,text="What is the player's country?")
         text.pack()
 
-        countryentry = tk.Entry(self)
-        countryentry.pack()
+        try:
+            cur.execute('select cname from country')
+            result = cur.fetchall()
+            connection.commit()
+            countries = map(lambda x:x[0], result)
+        except psycopg2.Error as e:
+            connection.rollback()
+
+        def get_nationality():
+            nationality['text'] = "You selected: " + mylist.get("active")
+
+        scrollbar = tk.Scrollbar(self)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        mylist = tk.Listbox(self, yscrollcommand=scrollbar.set)
+        for i in range(len(countries)):
+            mylist.insert(tk.END, countries[i])
+
+        mylist.pack()
+        scrollbar.config(command=mylist.yview)
+
+        select_btn = tk.Button(self,text="Select",
+            command=get_nationality)
+        select_btn.pack()
 
         # get the values from user input once all the containers are loaded onto frame
         def getValues():
-            country = countryentry.get()
-            countryentry.delete(0, tk.END)
-            m.player_with_most_gold_medals(connection, cur, country, msg)
+            nat = nationality["text"].split(":")[-1].strip()
+            m.player_with_most_gold_medals(connection, cur, nat, msg)
 
+        nationality = tk.Label(self, text="")
+        nationality.pack()
+        
         # submit
         submit_btn = tk.Button(self,text="SUBMIT",
             command=getValues)
@@ -201,8 +250,8 @@ class Option3(tk.Frame):
             "for the country with most gold medals",font=('Arial',10))
         label.pack(pady=10,padx=10)
 
-        label = tk.Label(self,text="Output Format: \"{Player Name}, #medals\" ",font=('Arial',10))
-        label.pack(pady=10,padx=10)
+        # label = tk.Label(self,text="Output Format: \"{Player Name}, #medals\" ",font=('Arial',10))
+        # label.pack(pady=10,padx=10)
         
         # get the values from user input once all the containers are loaded onto frame
         def getValues():
@@ -302,8 +351,11 @@ class Option6(tk.Frame):
         text = tk.Label(self, text="What is the type of the sports(Swimming, Athletics)?")
         text.pack()
 
+        scrollbar = tk.Scrollbar(orient="horizontal")
+
         stype_entry = tk.Entry(self)
         stype_entry.pack()
+
 
         def get_stype_entry():
             stype = stype_entry.get()
@@ -330,7 +382,7 @@ class Option6(tk.Frame):
         team_type_entry = tk.Entry(self)
         team_type_entry.pack()
 
-        def get_stype_entry():
+        def get_team_type():
             stype = stype_entry.get()
             team_type = team_type_entry.get()
             try:
@@ -341,10 +393,11 @@ class Option6(tk.Frame):
             except psycopg2.Error as e:
                 connection.rollback()
                 msg_2.set(e.pgerror)
+                controller.show_frame(6)
 
         # next
         next_btn = tk.Button(self, text="Next",
-                               command=get_stype_entry)
+                               command=get_team_type)
         next_btn.pack()
 
         msg_2 = tk.StringVar()
@@ -362,15 +415,14 @@ class Option6(tk.Frame):
             m.get_gold_medel_player(connection, cur, stype, team_type, gender, msg_final)
 
 
+        # submit
+        submit_btn = tk.Button(self, text="SUBMIT",
+                               command=getValues)
+        submit_btn.pack()
+
         msg_final = tk.StringVar()
         msgLabel = tk.Label(self, textvariable=msg_final)
         msgLabel.pack()
-
-        # submit
-        submit_btn = tk.Button(self, text="SUBMIT",
-                               command=get_stype_entry)
-        submit_btn.pack()
-
 
         goBack = tk.Button(self, text="Back", command=lambda: controller.show_frame(0))
         quit_bt = tk.Button(self, text="Quit", command=self.quit)
