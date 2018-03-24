@@ -9,6 +9,7 @@ Python GUI Tkinter
 import os, sys
 import tkinter as tk
 import modules as m
+from tkinter import *
 import psycopg2
 
 config = "user='cs421g19' host='comp421.cs.mcgill.ca' dbname='cs421' password='Pmdd0301'"
@@ -28,8 +29,8 @@ class Window(tk.Tk):
         frame = RadioButtons(container, self) #main menu
         frame1 = Option1(container, self)
         frame2 = Option2(container, self)
-        frame3 = Option1(container, self)
-        frame4 = Option1(container, self)
+        frame3 = Option3(container, self)
+        frame4 = Option4(container, self)
         frame5 = Option1(container, self)
         frame6 = Option1(container, self)
 
@@ -60,11 +61,11 @@ class RadioButtons(tk.Frame):
 
         #Option menu
         option = tk.IntVar()
-        option1 = tk.Radiobutton(self,text='Option 1 : Add a Player to Database',value=1,variable=option)
+        option1 = tk.Radiobutton(self,text='Option 1: Add a Player to Database',value=1,variable=option)
         option1.pack(anchor="nw")
-        option2 = tk.Radiobutton(self,text='Option 2',value=2,variable=option)
+        option2 = tk.Radiobutton(self,text='Option 2: Get the player with most gold medals in a selected country',value=2,variable=option)
         option2.pack(anchor="nw")
-        option3 = tk.Radiobutton(self,text='Option 3',value=3,variable=option)
+        option3 = tk.Radiobutton(self,text='Option 3: Get the female player with most gold medals for country with most gold medals',value=3,variable=option)
         option3.pack(anchor="nw")
         option4 = tk.Radiobutton(self,text='Option 4',value=4,variable=option)
         option4.pack(anchor="nw")
@@ -143,6 +144,79 @@ class Option1(tk.Frame):
         goBack.pack(side='bottom')
 
 class Option2(tk.Frame):
+    '''
+        Get the player who won the most gold medals for a selected country
+    '''
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self,parent)
+
+        label = tk.Label(self,text="Please enter the country to see the player who won the most gold medals",font=('Arial',10))
+        label.pack(pady=10,padx=10)
+        label = tk.Label(self,text="Output Format: \"{Player Name}, #medals\" ",font=('Arial',10))
+        label.pack(pady=10,padx=10)
+        
+        # Country
+        text = tk.Label(self,text="What is the player's country?")
+        text.pack()
+
+        countryentry = tk.Entry(self)
+        countryentry.pack()
+
+        # get the values from user input once all the containers are loaded onto frame
+        def getValues():
+            country = countryentry.get()
+            m.player_with_most_gold_medals(connection, cur, country, msg)
+
+        # submit
+        submit_btn = tk.Button(self,text="SUBMIT",
+            command=getValues)
+        submit_btn.pack()
+
+        # success message
+        msg = tk.StringVar()
+        msgLabel = tk.Label(self, textvariable = msg)
+        msgLabel.pack()
+
+        goBack = tk.Button(self,text="Back",command=lambda: controller.show_frame(0))
+        quit_bt = tk.Button(self,text="Quit",command=self.quit)
+        quit_bt.pack(side='bottom')
+        goBack.pack(side='bottom')
+
+class Option3(tk.Frame):
+    '''
+        Get the female player who won the most gold medals for country with most gold medals
+    '''
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self,parent)
+
+        label = tk.Label(self,text=
+            "Click \"Calculate\" to get the female player who won the most gold medals for the country with most gold medals",font=('Arial',10))
+        label.pack(pady=10,padx=10)
+
+        label = tk.Label(self,text="Output Format: \"{Player Name}, #medals\" ",font=('Arial',10))
+        label.pack(pady=10,padx=10)
+        
+        # get the values from user input once all the containers are loaded onto frame
+        def getValues():
+            m.female_player_with_most_gold_medals_in_country_with_most_gold_medals(connection, cur, msg)
+
+        # submit
+        submit_btn = tk.Button(self,text="CALCULATE",
+            command=getValues)
+        submit_btn.pack()
+
+        # success message
+        msg = tk.StringVar()
+        msgLabel = tk.Label(self, textvariable = msg)
+        msgLabel.pack()
+
+        goBack = tk.Button(self,text="Back",command=lambda: controller.show_frame(0))
+        quit_bt = tk.Button(self,text="Quit",command=self.quit)
+        quit_bt.pack(side='bottom')
+        goBack.pack(side='bottom')
+
+
+class Option4(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self,parent)
 
@@ -171,6 +245,8 @@ class Option2(tk.Frame):
         # pid = entryStuff.get()
         self.entryStuff.delete(0, tk.END)
         self.showStuff.config(text=enteredText)
+
+
 
 
 def main():
