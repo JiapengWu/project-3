@@ -1,9 +1,17 @@
 # write functions that perform queries and modification here
 
+import psycopg2
 
 # Add one player
-def add_single_player(cur, pid, name, gender, nationality):
-    cur.execute( "insert into  player values (%s, %s, %s, %s, 0, 0, 0);" , (pid, name, gender, nationality))
+def add_single_player(conn, cur, pid, name, gender, nationality, msg):
+    try:
+        cur.execute( "insert into  player values (%s, %s, %s, %s, 0, 0, 0);" , (pid, name, gender, nationality))
+        conn.commit() #connection must commit all executions done (save changes)
+        #cursor will return to initial  position automatically
+        msg.set("Player added successfully.")
+    except psycopg2.Error as e:
+        conn.rollback() #if error cursor is stuck so ned to manually reset connection and cursor to execute next statement 
+        msg.set(e.pgerror)
 
 
 # find the Canadian who has won the most gold medals

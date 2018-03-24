@@ -11,6 +11,9 @@ import tkinter as tk
 import modules as m
 import psycopg2
 
+config = "user='cs421g19' host='comp421.cs.mcgill.ca' dbname='cs421' password='Pmdd0301'"
+connection = psycopg2.connect(config)
+cur = connection.cursor()
 
 class Window(tk.Tk):
     def __init__(self,*args,**kwargs):
@@ -87,43 +90,52 @@ class Option1(tk.Frame):
 
         label = tk.Label(self,text="Please fill the player information",font=('Arial',10))
         label.pack(pady=10,padx=10)
+        
         #pid
         text = tk.Label(self,text="What is the player's pid? It has to be greater than 0")
         text.pack()
 
-        entryStuff = tk.Entry(self)
-        entryStuff.pack()
-        pid = entryStuff.get()
-        entryStuff.delete(0, tk.END)
+        pidentry = tk.Entry(self)
+        pidentry.pack()
     
-        # # name
-        # text = tk.Label(self,text="What is the player's name?")
-        # text.pack()
+        # name
+        text = tk.Label(self,text="What is the player's name?")
+        text.pack()
 
-        # self.entryStuff = tk.Entry(self)
-        # self.entryStuff.pack()
-        # name = self.entryStuff.get()
-        # # gender
-        # text = tk.Label(self,text="What is the player's gender(Male or Female)?")
-        # text.pack()
+        nameentry = tk.Entry(self)
+        nameentry.pack()
 
-        # self.entryStuff = tk.Entry(self)
-        # self.entryStuff.pack()
-        # gender = self.entryStuff.get()
+        # gender
+        text = tk.Label(self,text="What is the player's gender(Male or Female)?")
+        text.pack()
 
-        # #nationality
-        # text = tk.Label(self,text="What is the player's country")
-        # text.pack()
+        genderentry = tk.Entry(self)
+        genderentry.pack()
 
-        self.entryStuff = tk.Entry(self)
-        self.entryStuff.pack()
-        nationality = self.entryStuff.get()
+        #nationality
+        text = tk.Label(self,text="What is the player's country")
+        text.pack()
+
+        natentry = tk.Entry(self)
+        natentry.pack()
+
+        #get the values from user input once all the containers are loaded onto frame
+        def getValues():
+            pid = pidentry.get()
+            name = nameentry.get()
+            gender = genderentry.get()
+            nationality = natentry.get()
+            m.add_single_player(connection, cur, pid, name, gender, nationality, msg)
 
         #submit
         submit_btn = tk.Button(self,text="SUBMIT",
-            # command=lambda: m.add_single_player(cur, pid, name, gender, nationality))
-            command=lambda: m.add_single_player(cur, pid, None, None, None))
+            command=getValues)
         submit_btn.pack()
+
+        # success message
+        msg = tk.StringVar()
+        msgLabel = tk.Label(self, textvariable = msg)
+        msgLabel.pack()
 
         goBack = tk.Button(self,text="Back",command=lambda: controller.show_frame(0))
         quit_bt = tk.Button(self,text="Quit",command=self.quit)
@@ -156,12 +168,14 @@ class Option2(tk.Frame):
 
     def dostuff(self):
         enteredText = self.entryStuff.get()
+        # pid = entryStuff.get()
         self.entryStuff.delete(0, tk.END)
         self.showStuff.config(text=enteredText)
 
 
-def main(cur):
+def main():
     root = Window()
+    root.title("Olympics Database Project GUI")
     root.protocol("WM_DELETE_WINDOW", root.quit)
     root.mainloop()
     root.destroy()
@@ -170,10 +184,7 @@ def main(cur):
 
 
 if __name__ == "__main__":
-    config = "user='cs421g19' host='comp421.cs.mcgill.ca' dbname='cs421' password='Pmdd0301'"
-    connection = psycopg2.connect(config)
-    cur = connection.cursor()
-    exit_code = main(cur)
+    exit_code = main()
     print("Closing connections")
     cur.close()
     connection.close()
