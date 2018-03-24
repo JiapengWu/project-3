@@ -25,23 +25,22 @@ class Window(tk.Tk):
 
         self.frames = []
         #create 'pages' for each option
-        frame = RadioButtons(container, self) #main menu
-        frame1 = Option1(container, self)
-        frame2 = Option2(container, self)
-        frame3 = Option3(container, self)
-        frame4 = Option4(container, self)
-        frame5 = Option5(container, self)
-        frame6 = Option6(container, self)
+        main_frame = RadioButtons(container, self) #main menu
+        frame_1 = Option1(container, self)
+        frame_2 = Option2(container, self)
+        frame_3 = Option3(container, self)
+        frame_4 = Option4(container, self)
+        frame_5 = Option5(container, self)
+        frame_6 = Option6(container, self)
 
         #append each 'page' to a list
-        self.frames.append(frame)
-        self.frames.append(frame1)
-        self.frames.append(frame2)
-        self.frames.append(frame3)
-        self.frames.append(frame4)
-        self.frames.append(frame5)
-        self.frames.append(frame6)
-
+        self.frames.append(main_frame)
+        self.frames.append(frame_1)
+        self.frames.append(frame_2)
+        self.frames.append(frame_3)
+        self.frames.append(frame_4)
+        self.frames.append(frame_5)
+        self.frames.append(frame_6)
         #go through list to find the right page to load based on option selected
         for f in self.frames:
             f.grid(row=0, column=0, sticky="nsew")
@@ -116,20 +115,51 @@ class Option1(tk.Frame):
         genderentry = tk.Entry(self)
         genderentry.pack()
 
-        #nationality
-        text = tk.Label(self,text="What is the player's country")
+        # nationality
+        text = tk.Label(self,text="What is the player's country? Select from the list below:")
         text.pack()
 
-        natentry = tk.Entry(self)
-        natentry.pack()
+
+        try:
+            cur.execute('select cname from country')
+            result = cur.fetchall()
+            connection.commit()
+            countries = map(lambda x:x[0], result)
+        except psycopg2.Error as e:
+            connection.rollback()
+
+        def get_nationality():
+            nationality['text'] = "You selected: " + mylist.get("active")
+
+        scrollbar = tk.Scrollbar(self)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        mylist = tk.Listbox(self, yscrollcommand=scrollbar.set)
+        for i in range(len(countries)):
+            mylist.insert(tk.END, countries[i])
+
+        mylist.pack()
+        scrollbar.config(command=mylist.yview)
+
+        select_btn = tk.Button(self,text="Select",
+            command=get_nationality)
+        select_btn.pack()
+
+        nationality = tk.Label(self, text="")
+        nationality.pack()
+
+
 
         #get the values from user input once all the containers are loaded onto frame
         def getValues():
             pid = pidentry.get()
             name = nameentry.get()
             gender = genderentry.get()
-            nationality = natentry.get()
-            m.add_single_player(connection, cur, pid, name, gender, nationality, msg)
+            nat = nationality["text"].split(":")[-1].strip()
+            pidentry.delete(0, tk.END)
+            genderentry.delete(0, tk.END)
+            nameentry.delete(0, tk.END)
+            m.add_single_player(connection, cur, pid, name, gender, nat, msg)
 
         #submit
         submit_btn = tk.Button(self,text="SUBMIT",
@@ -155,20 +185,43 @@ class Option2(tk.Frame):
 
         label = tk.Label(self,text="Please enter the country to see the player who won the most gold medals",font=('Arial',10))
         label.pack(pady=10,padx=10)
-        label = tk.Label(self,text="Output Format: \"{Player Name}, #medals\" ",font=('Arial',10))
-        label.pack(pady=10,padx=10)
         
         # Country
         text = tk.Label(self,text="What is the player's country?")
         text.pack()
 
-        countryentry = tk.Entry(self)
-        countryentry.pack()
+        try:
+            cur.execute('select cname from country')
+            result = cur.fetchall()
+            connection.commit()
+            countries = map(lambda x:x[0], result)
+        except psycopg2.Error as e:
+            connection.rollback()
+
+        def get_nationality():
+            nationality['text'] = "You selected: " + mylist.get("active")
+
+        scrollbar = tk.Scrollbar(self)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        mylist = tk.Listbox(self, yscrollcommand=scrollbar.set)
+        for i in range(len(countries)):
+            mylist.insert(tk.END, countries[i])
+
+        mylist.pack()
+        scrollbar.config(command=mylist.yview)
+
+        select_btn = tk.Button(self,text="Select",
+            command=get_nationality)
+        select_btn.pack()
 
         # get the values from user input once all the containers are loaded onto frame
         def getValues():
-            country = countryentry.get()
-            m.player_with_most_gold_medals(connection, cur, country, msg)
+            nat = nationality["text"].split(":")[-1].strip()
+            m.player_with_most_gold_medals(connection, cur, nat, msg)
+
+        nationality = tk.Label(self, text="")
+        nationality.pack()
 
         # submit
         submit_btn = tk.Button(self,text="SUBMIT",
@@ -197,8 +250,8 @@ class Option3(tk.Frame):
             "for the country with most gold medals",font=('Arial',10))
         label.pack(pady=10,padx=10)
 
-        label = tk.Label(self,text="Output Format: \"{Player Name}, #medals\" ",font=('Arial',10))
-        label.pack(pady=10,padx=10)
+        # label = tk.Label(self,text="Output Format: \"{Player Name}, #medals\" ",font=('Arial',10))
+        # label.pack(pady=10,padx=10)
         
         # get the values from user input once all the containers are loaded onto frame
         def getValues():
@@ -281,65 +334,100 @@ class Option5(tk.Frame):
         quit_bt.pack(side='bottom')
         goBack.pack(side='bottom')
 
+
 class Option6(tk.Frame):
     '''
         Find all players who got gold and participated in a specific category of a match
     '''
+
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self,parent)
+        tk.Frame.__init__(self, parent)
 
-        label = tk.Label(self,text=
-            "Fill the information find all players who got gold and participated in a specific \'category\' of match",font=('Arial',10))
-        label.pack(pady=10,padx=10)
 
-        label = tk.Label(self,text="Output Format: \"{Player Name}\" ",font=('Arial',10))
-        label.pack(pady=10,padx=10)
-        
-        # sport type
-        text = tk.Label(self,text="What is the Sport Type (Swimming or Athletics)?")
+        label = tk.Label(self, text="", font=('Arial', 10))
+        label.pack(pady=10, padx=10)
+
+        # stype
+        text = tk.Label(self, text="What is the type of the sports(Swimming, Athletics)?")
         text.pack()
 
-        stypeentry = tk.Entry(self)
-        stypeentry.pack()
+        scrollbar = tk.Scrollbar(orient="horizontal")
 
-        # team type
-        text = tk.Label(self,text="What is the Team Type Category (Single or Team)?")
-        text.pack()
-
-        ttentry = tk.Entry(self)
-        ttentry.pack()
-
-        # gender
-        text = tk.Label(self,text="What is the Gender category (\'male\' or \'female\')?")
-        text.pack()
-
-        gentry = tk.Entry(self)
-        gentry.pack()
+        stype_entry = tk.Entry(self)
+        stype_entry.pack()
 
 
+        def get_stype_entry():
+            stype = stype_entry.get()
+            try:
+                cur.execute('select team_type from sports where stype = %s', (stype,))
+                team_types = cur.fetchall()
+                connection.commit()
+                msg_1.set("What is the type of the team type({})?".format((', ').join(set(map(lambda x: x[0], team_types)))))
+            except psycopg2.Error as e:
+                connection.rollback()
+                msg_1.set(e.pgerror)
 
-        # get the values from user input once all the containers are loaded onto frame
-        def getValues():
-            stype = stypeentry.get()
-            team_type = ttentry.get()
-            gender = gentry.get()
-            m.get_gold_medel_player(connection, cur, stype, team_type, gender, msg)
+        # next
+        next_btn = tk.Button(self, text="Next",
+                               command=get_stype_entry)
+        next_btn.pack()
 
-        # submit
-        submit_btn = tk.Button(self,text="Submit",
-            command=getValues)
-        submit_btn.pack()
-
-        # success message
-        msg = tk.StringVar()
-        msgLabel = tk.Label(self, textvariable = msg)
+        msg_1 = tk.StringVar()
+        msgLabel = tk.Label(self, textvariable=msg_1)
         msgLabel.pack()
 
-        goBack = tk.Button(self,text="Back",command=lambda: controller.show_frame(0))
-        quit_bt = tk.Button(self,text="Quit",command=self.quit)
+        # team_type
+
+        team_type_entry = tk.Entry(self)
+        team_type_entry.pack()
+
+        def get_team_type():
+            stype = stype_entry.get()
+            team_type = team_type_entry.get()
+            try:
+                cur.execute("select gender from sports where stype = %s and team_type = %s", (stype, team_type,))
+                genders = cur.fetchall()
+                connection.commit()
+                msg_2.set("What is the type of the gender({})?".format((', ').join(set(map(lambda x: x[0], genders)))))
+            except psycopg2.Error as e:
+                connection.rollback()
+                msg_2.set(e.pgerror)
+                controller.show_frame(6)
+
+        # next
+        next_btn = tk.Button(self, text="Next",
+                               command=get_team_type)
+        next_btn.pack()
+
+        msg_2 = tk.StringVar()
+        msgLabel = tk.Label(self, textvariable=msg_2)
+        msgLabel.pack()
+
+        gender_entry = tk.Entry(self)
+        gender_entry.pack()
+
+
+        def getValues():
+            stype = stype_entry.get()
+            team_type = team_type_entry.get()
+            gender = gender_entry.get()
+            m.get_gold_medel_player(connection, cur, stype, team_type, gender, msg_final)
+
+
+        # submit
+        submit_btn = tk.Button(self, text="SUBMIT",
+                               command=getValues)
+        submit_btn.pack()
+
+        msg_final = tk.StringVar()
+        msgLabel = tk.Label(self, textvariable=msg_final)
+        msgLabel.pack()
+
+        goBack = tk.Button(self, text="Back", command=lambda: controller.show_frame(0))
+        quit_bt = tk.Button(self, text="Quit", command=self.quit)
         quit_bt.pack(side='bottom')
         goBack.pack(side='bottom')
-
 
 
 

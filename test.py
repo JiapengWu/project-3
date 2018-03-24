@@ -1,11 +1,14 @@
-import modules as m
-import psycopg2
+from Tkinter import *
 
-config = "user='cs421g19' host='comp421.cs.mcgill.ca' dbname='cs421' password='Pmdd0301'"
+master = Tk()
 
-connection = psycopg2.connect(config)
-cur = connection.cursor()
+listbox = Listbox(master)
+listbox.pack()
 
-# m.add_single_player(cur, 10000, "", "", "China")
-m.player_with_most_gold_medals(cur)
-connection.close()
+listbox.delete(0, END)
+listbox.insert(END, "a list entry")
+
+for item in ["one", "two", "three", "four"]:
+    listbox.insert(END, item)
+
+mainloop()
