@@ -66,17 +66,17 @@ class RadioButtons(tk.Frame):
         option1.pack(anchor="nw")
         option2 = tk.Radiobutton(self,text='Option 2: Get the player with most gold medals in a selected country',value=2,variable=option)
         option2.pack(anchor="nw")
-        option3 = tk.Radiobutton(self,text='Option 3: Get the female player with most gold medals for country \n'+
-                                            'with most gold medals',value=3,variable=option)
+        option3 = tk.Radiobutton(self,text='Option 3: Get the female player with most gold medals in country winning the most gold medals'
+                                                                ,value=3,variable=option)
         option3.pack(anchor="nw")
-        option4 = tk.Radiobutton(self,text='Option 4: Give medals to each player who won 1st, 2nd or 3rd place \n'+
-                                            'in Finals match category',value=4,variable=option)
+        option4 = tk.Radiobutton(self,text='Option 4: Update the number of gold, silver and bronze medals for each player'
+                                                                ,value=4,variable=option)
         option4.pack(anchor="nw")
-        option5 = tk.Radiobutton(self,text='Option 5: Update the number of gold/silver/bronze medals for each country, \n'+ 
-                                            'given the players that won medals in Finals',value=5,variable=option)
+        option5 = tk.Radiobutton(self,text='Option 5: Update the number of gold, silver and bronze medals for each country'
+                                                                ,value=5,variable=option)
         option5.pack(anchor="nw")
-        option6 = tk.Radiobutton(self,text='Option 6: Find all players who got gold medals and \n'+
-                                            'participate in a specific \'category\' in a match',value=6,variable=option)
+        option6 = tk.Radiobutton(self,text='Option 6: Find all players who got gold medals in a given \'category\' in a match'
+                                                                ,value=6,variable=option)
         option6.pack(anchor="nw")
 
         option7 = tk.Radiobutton(self,text='Option 7: Add a new participation record',value=7,variable=option)
@@ -644,8 +644,6 @@ class Option7(tk.Frame):
             sports_label['text'] = ''
             matches_label['text'] = ''
 
-
-
         # submit
         submit_btn = tk.Button(self, text="SUBMIT",
                                command=getvalue)
@@ -684,6 +682,5 @@ if __name__ == "__main__":
     print("Closing connections")
     cur.close()
     connection.close()
-    # server.stop()
     print("Exiting program")
     sys.exit(exit_code)
