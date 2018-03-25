@@ -10,6 +10,7 @@ import os, sys
 import tkinter as tk
 import modules as m
 import psycopg2
+import re
 
 config = "user='cs421g19' host='comp421.cs.mcgill.ca' dbname='cs421' password='Pmdd0301'"
 connection = psycopg2.connect(config)
@@ -32,6 +33,7 @@ class Window(tk.Tk):
         frame_4 = Option4(container, self)
         frame_5 = Option5(container, self)
         frame_6 = Option6(container, self)
+        frame_7 = Option7(container, self)
 
         #append each 'page' to a list
         self.frames.append(main_frame)
@@ -41,6 +43,7 @@ class Window(tk.Tk):
         self.frames.append(frame_4)
         self.frames.append(frame_5)
         self.frames.append(frame_6)
+        self.frames.append(frame_7)
         #go through list to find the right page to load based on option selected
         for f in self.frames:
             f.grid(row=0, column=0, sticky="nsew")
@@ -74,7 +77,11 @@ class RadioButtons(tk.Frame):
         option5.pack(anchor="nw")
         option6 = tk.Radiobutton(self,text='Option 6: Find all players who got gold medals and \n'+
                                             'participate in a specific \'category\' in a match',value=6,variable=option)
-        option6.pack(anchor="nw")   
+        option6.pack(anchor="nw")
+
+        option7 = tk.Radiobutton(self,text='Option 7: Add a new participation record',value=7,variable=option)
+        option7.pack(anchor="nw")
+
 
         option1.select() #default select option 1
 
@@ -147,8 +154,6 @@ class Option1(tk.Frame):
 
         nationality = tk.Label(self, text="")
         nationality.pack()
-
-
 
         #get the values from user input once all the containers are loaded onto frame
         def getValues():
@@ -344,6 +349,9 @@ class Option6(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
+        # code for scrollbar
+        scrollbar = tk.Scrollbar(self)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         label = tk.Label(self, text="", font=('Arial', 10))
         label.pack(pady=10, padx=10)
@@ -390,6 +398,7 @@ class Option6(tk.Frame):
         team_type_list.pack()
 
         def get_team_type():
+
             stype = stype_label["text"].split(":")[-1].strip()
             team_type = team_type_list.get("active")
             team_type_label['text'] = "You selected: " + team_type
@@ -397,7 +406,6 @@ class Option6(tk.Frame):
             try:
                 cur.execute("select gender from sports where stype = %s and team_type = %s", (stype, team_type,))
                 genders = set(map(lambda x: x[0], cur.fetchall()))
-                print (genders)
                 for gender in genders:
                     gender_list.insert(tk.END, gender)
                 connection.commit()
@@ -421,6 +429,7 @@ class Option6(tk.Frame):
         gender_list.pack()
 
         def get_gender():
+
             gender = gender_list.get("active")
             gender_label['text'] = "You selected: " + gender
 
@@ -435,6 +444,11 @@ class Option6(tk.Frame):
             stype = stype_label["text"].split(":")[-1].strip()
             team_type = team_type_label["text"].split(":")[-1].strip()
             gender = gender_label["text"].split(":")[-1].strip()
+            team_type_list.delete(0, tk.END)
+            gender_list.delete(0, tk.END)
+            stype_label["text"] = ''
+            team_type_label["text"] = ''
+            gender_label['text'] = ''
             m.get_gold_medel_player(connection, cur, stype, team_type, gender, msg_final)
 
 
@@ -447,12 +461,196 @@ class Option6(tk.Frame):
         msgLabel = tk.Label(self, textvariable=msg_final)
         msgLabel.pack()
 
+
+        def refresh():
+            team_type_list.delete(0, tk.END)
+            gender_list.delete(0, tk.END)
+            stype_label["text"] = ''
+            team_type_label["text"] = ''
+            gender_label['text'] = ''
+
+        refresh_button = tk.Button(self, text="refresh", command=refresh)
+        refresh_button.pack()
         goBack = tk.Button(self, text="Back", command=lambda: controller.show_frame(0))
         quit_bt = tk.Button(self, text="Quit", command=self.quit)
         quit_bt.pack(side='bottom')
         goBack.pack(side='bottom')
 
 
+class Option7(tk.Frame):
+    '''
+        Add a participation to the database
+    '''
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+
+        label = tk.Label(self, text="Please fill the participation information", font=('Arial', 10))
+        label.pack(pady=10, padx=10)
+
+        # code for scrollbar
+        scrollbar = tk.Scrollbar(self)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        # pid
+        text = tk.Label(self, text="What is the player's pid? It has to be greater than 0")
+        text.pack()
+
+        scrollbar = tk.Scrollbar(self)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        pid_list = tk.Listbox(self, yscrollcommand=scrollbar.set)
+        pid_list.pack()
+        scrollbar.config(command=pid_list.yview)
+
+        try:
+            cur.execute('select player_id from player;')
+            pids = map(str, sorted(list(map(lambda x: x[0], cur.fetchall()))))
+            for pid in pids:
+                pid_list.insert(tk.END, pid)
+            connection.commit()
+        except psycopg2.Error as e:
+            connection.rollback()
+            # msg_1.set(e.pgerror)
+
+        def get_pid():
+            pid_label['text'] = "You selected: " + pid_list.get("active")
+
+        select_btn = tk.Button(self, text="Select",
+                               command=get_pid)
+        select_btn.pack()
+
+        pid_label = tk.Label(self, text="")
+        pid_label.pack()
+
+        text = tk.Label(self, text="Please select the sports: ")
+        text.pack()
+
+        scrollbar = tk.Scrollbar(self)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        sports_list = tk.Listbox(self, yscrollcommand=scrollbar.set, width = 50)
+        sports_list.pack()
+        scrollbar.config(command=pid_list.yview)
+
+        try:
+            cur.execute('select sports_id, stype, sname, team_type, gender, distance from sports;')
+            sports = map(lambda x: map(str, x),cur.fetchall())
+            for sport in sports:
+                sports_list.insert(tk.END, " ".join(sport))
+            connection.commit()
+        except psycopg2.Error as e:
+            connection.rollback()
+            # msg_1.set(e.pgerror)
+
+        def get_sport():
+            sports_tuple = sports_list.get("active")
+            sports_label['text'] = "You selected: " + sports_tuple
+            try:
+                # cur.execute('select match_id, match_type, location, match_date from matches where sports_id = ;')
+                sports_id = int(sports_tuple.split()[0])
+                cur.execute('select * from matches where sports_id = %s;', (sports_id, ))
+                matches = map(lambda x: map(str, x), cur.fetchall())
+                for match in matches:
+                    matches_list.insert(tk.END, " ".join(match))
+                connection.commit()
+            except psycopg2.Error as e:
+                connection.rollback()
+                sports_label['text'] = "No match related to your selection."
+
+        select_btn = tk.Button(self, text="Select", command=get_sport)
+        select_btn.pack()
+
+        sports_label = tk.Label(self, text="")
+        sports_label.pack()
+
+
+        text = tk.Label(self, text="Please select the match: ")
+        text.pack()
+
+        matches_list = tk.Listbox(self, width = 50)
+        matches_list.pack()
+
+        def get_matches():
+            matches_label['text'] = "You selected: " + matches_list.get("active")
+
+        select_btn = tk.Button(self, text="Select", command=get_matches)
+        select_btn.pack()
+
+        matches_label = tk.Label(self, text="")
+        matches_label.pack()
+
+
+
+        # input result:
+        text = tk.Label(self, text="Please input the player's result:")
+        text.pack()
+
+        result_entry = tk.Entry(self)
+        result_entry.pack()
+
+        def getvalue():
+            pid = int(pid_label['text'].split(":")[1].strip())
+            match_id = int(matches_label['text'].split(":")[1].split()[0])
+            result = result_entry.get()
+            try:
+                # cur.execute('select match_id, match_type, location, match_date from matches where sports_id = ;')
+                cur.execute('''
+                select result, match_type from 
+                    matches m inner join participate p on 
+                    m.match_id = p.match_id 
+                    where m.match_id = %s
+                ;''', (match_id, ))
+                result_tuples = cur.fetchall()
+                ranking = 0
+                medal = None
+                print result_tuples
+                if result_tuples:
+                    match_type = result_tuples[0][1]
+                    match_results = map(lambda x:float(re.sub('[^0-9.]','', x[0])), result_tuples)
+                    numeric_result = float(re.sub('[^0-9.]', '', result))
+                    match_results.append(numeric_result)
+                    match_results = sorted(match_results)
+                    print match_results
+                    ranking = match_results.index(numeric_result) + 1
+                    print ranking
+
+                    if match_type == 'final' and ranking <= 3:
+                        if ranking == 1: medal = 'gold'
+                        elif ranking == 2: medal = 'silver'
+                        elif ranking == 3: medal = 'bronze'
+                else:
+                    ranking = 1
+                connection.commit()
+            except Exception as e:
+                connection.rollback()
+                msg.set(str(e))
+
+            try:
+                cur.execute("insert into participate values (%s, %s, %s, %s, %s);", (pid, match_id, result, ranking, medal, ))
+                msg.set("Your processed result is: \n" +
+                        "player id: {}\n match_id: {}\n result: {}\n ranking: {}\n medal: {}"
+                        .format(pid, match_id, result, ranking, medal))
+                connection.commit()
+            except psycopg2.Error as e:
+                connection.rollback()
+                msg.set(str(e))
+
+
+
+        # submit
+        submit_btn = tk.Button(self, text="SUBMIT",
+                               command=getvalue)
+        submit_btn.pack()
+
+        # success message
+        msg = tk.StringVar()
+        msgLabel = tk.Label(self, textvariable=msg)
+        msgLabel.pack()
+
+        goBack = tk.Button(self, text="Back", command=lambda: controller.show_frame(0))
+        quit_bt = tk.Button(self, text="Quit", command=self.quit)
+        quit_bt.pack(side='bottom')
+        goBack.pack(side='bottom')
 
 def main():
     root = Window()
