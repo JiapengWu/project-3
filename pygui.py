@@ -582,7 +582,7 @@ class Option7(tk.Frame):
 
 
         # input result:
-        text = tk.Label(self, text="Please input the player's result:")
+        text = tk.Label(self, text="Please input the player's result(e.g. 23.4s):")
         text.pack()
 
         result_entry = tk.Entry(self)
@@ -592,6 +592,12 @@ class Option7(tk.Frame):
             pid = int(pid_label['text'].split(":")[1].strip())
             match_id = int(matches_label['text'].split(":")[1].split()[0])
             result = result_entry.get()
+            regex = r"[1-9]+[.]*[0-9]*[s]$"
+
+            matches = re.match(regex, result)
+            if not matches:
+                msgLabel['text'] = "Please input the correct format"
+                return
             try:
                 # cur.execute('select match_id, match_type, location, match_date from matches where sports_id = ;')
                 cur.execute('''
@@ -603,16 +609,13 @@ class Option7(tk.Frame):
                 result_tuples = cur.fetchall()
                 ranking = 0
                 medal = None
-                print result_tuples
                 if result_tuples:
                     match_type = result_tuples[0][1]
                     match_results = map(lambda x:float(re.sub('[^0-9.]','', x[0])), result_tuples)
                     numeric_result = float(re.sub('[^0-9.]', '', result))
                     match_results.append(numeric_result)
                     match_results = sorted(match_results)
-                    print match_results
                     ranking = match_results.index(numeric_result) + 1
-                    print ranking
 
                     if match_type == 'final' and ranking <= 3:
                         if ranking == 1: medal = 'gold'
@@ -623,17 +626,23 @@ class Option7(tk.Frame):
                 connection.commit()
             except Exception as e:
                 connection.rollback()
-                msg.set(str(e))
+                msgLabel['text'] = str(e)
 
             try:
                 cur.execute("insert into participate values (%s, %s, %s, %s, %s);", (pid, match_id, result, ranking, medal, ))
-                msg.set("Your processed result is: \n" +
-                        "player id: {}\n match_id: {}\n result: {}\n ranking: {}\n medal: {}"
-                        .format(pid, match_id, result, ranking, medal))
+                msgLabel['text'] = "Your processed result is: \n" + \
+                        "player id: {}\n match_id: {}\n result: {}\n ranking: {}\n medal: {}" \
+                        .format(pid, match_id, result, ranking, medal)
                 connection.commit()
             except psycopg2.Error as e:
                 connection.rollback()
-                msg.set(str(e))
+                msgLabel['text'] = str(e)
+
+            result_entry.delete(0, tk.END)
+            matches_list.delete(0, tk.END)
+            pid_label['text'] = ''
+            sports_label['text'] = ''
+            matches_label['text'] = ''
 
 
 
@@ -643,10 +652,18 @@ class Option7(tk.Frame):
         submit_btn.pack()
 
         # success message
-        msg = tk.StringVar()
-        msgLabel = tk.Label(self, textvariable=msg)
+        msgLabel = tk.Label(self, text = '')
         msgLabel.pack()
 
+        def refresh():
+            result_entry.delete(0, tk.END)
+            matches_list.delete(0, tk.END)
+            pid_label['text'] = ''
+            sports_label['text'] = ''
+            matches_label['text'] = ''
+            msgLabel['text'] = ''
+        refresh_button = tk.Button(self, text="refresh", command=refresh)
+        refresh_button.pack()
         goBack = tk.Button(self, text="Back", command=lambda: controller.show_frame(0))
         quit_bt = tk.Button(self, text="Quit", command=self.quit)
         quit_bt.pack(side='bottom')
