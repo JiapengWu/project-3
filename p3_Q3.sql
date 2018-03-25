@@ -1,7 +1,8 @@
 CREATE INDEX pcname ON player(cname);
 DROP INDEX pcname;
 
--- easier to run query update_country_medal: 
+-- Easier to run query update_country_medal. The index on country help associate the player
+-- with the appropriate country to update the medal count for that country : 
 
 -- Update country
 --	set gold_number = 
@@ -29,8 +30,52 @@ DROP INDEX pcname;
 CREATE INDEX goldplayer ON player(gold_number);
 DROP INDEX goldplayer;
 
--- this will speed up all the queries that try to find either the male or female players that won 
--- a gold medal
--- e.g. player_with_most_gold_medals; 
---      female_player_with_most_gold_medals_in_country_with_most_gold_medals;
---      get_gold_medel_player
+-- this will speed up all the execution of all queries that try to find data based on the gold medal attribute:
+-- Here are a few queries used in our GUI that will be sped up:
+
+--1) get_gold_medels_player:
+--	select pname, gold_number from player
+--        where player_id = any
+--        (
+--            select player_id from player
+--            where gold_number > 0
+--            intersect
+--            select player_id from participate
+--            where match_id = any
+--            (
+--                select match_id from matches
+--                where sports_id = any
+--                (
+--                    select sports_id from sports
+--                    where stype = %s and team_type = %s and gender = %s
+--                )
+--            )
+-- 	    );
+
+ 
+--2) female_player_with_most_gold_medals_in_country_with_most_gold_medals:
+--	select pname, gold_number, cname from player
+--        where cname in (select cname from country where gold_number = (
+--                select max(gold_number) from country
+--            )
+--        )
+--        and gender = 'Female'
+--        and gold_number = (
+--        select max(gold_number) from player
+--            where gender = 'Female' and cname in
+--            (select cname from country where gold_number = (
+--                select max(gold_number) from country
+--                )
+--            )
+--        );
+
+
+--3) player_with_most_gold_medals: 
+--	select pname, gold_number from player
+--      where cname = %s
+--      and gold_number = (
+--            select max(gold_number) from player
+--            where cname = %s
+--            );'
+
+
